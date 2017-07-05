@@ -5,14 +5,15 @@ from discord import Game
 
 import SECRETS
 import STATICS
-from commands import ping
+from commands import ping, cmd_autorole
 
 client = discord.Client()
 
-# Später hinzufügen, wenn der Command Parser gecoded wird
+
 commands = {
 
     "ping": ping,
+    "autorole": cmd_autorole,
 
 }
 
@@ -39,6 +40,13 @@ def on_message(message):
             yield from commands.get(invoke).ex(message, args, client)
         else:
             yield from client.send_message(message.channel, embed=discord.Embed(color=discord.Color.red(), description=("Command \"%s%s\" does not exist!" % (STATICS.PREFIX, invoke))))
+
+
+@client.event
+@asyncio.coroutine
+def on_member_join(member):
+    yield from client.send_message(member, "**Hey %s!**\n\nWelcome on the  *%s*Discord Server!" % (member.name, member.server.name))
+    yield from client.add_roles(member, cmd_autorole.get(member.server))
 
 
 client.run(SECRETS.TOKEN)
