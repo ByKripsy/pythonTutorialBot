@@ -23,8 +23,9 @@ commands = {
 def on_ready():
 
     print("\nRunning on %s servers:" % len(client.servers))
-    for s in client.servers:
-        print("  - %s (%s)" % (s.name, s.id))
+    # for s in client.servers:
+    #     print("  - %s (%s)" % (s.name, s.id))
+    [(lambda s: print("  - %s (%s)" % (s.name, s.id)))(s) for s in client.servers]
     print("------------------------")
 
     yield from client.change_presence(game=Game(name="THIS BOT IS RUNNING FOR TUTORIAL RECORDING"))
