@@ -1,9 +1,11 @@
 import asyncio as asyncio
+
 import discord
-from discord import Game, Server, Member, Embed
+from discord import Game, Embed
 
 import SECRETS
-from commands import cmd_ping, STATICS
+import STATICS
+from commands import cmd_ping, cmd_autorole
 
 client = discord.Client()
 
@@ -11,6 +13,7 @@ client = discord.Client()
 commands = {
 
     "ping": cmd_ping,
+    "autorole": cmd_autorole,
 
 }
 
@@ -19,8 +22,7 @@ commands = {
 @asyncio.coroutine
 def on_ready():
     print("Bot is logged in successfully. Running on servers:\n")
-    for s in client.servers:
-        print("  - %s (%s)" % (s.name, s.id))
+    [(lambda s: print("  - %s (%s)" % (s.name, s.id)))(s) for s in client.servers]
     yield from client.change_presence(game=Game(name="This is just for tutorial purposes!"))
 
 
@@ -35,6 +37,19 @@ def on_message(message):
         else:
             yield from client.send_message(message.channel, embed=Embed(color=discord.Color.red(), description=("The command `%s` is not valid!" % invoke)))
 
+
+@client.event
+@asyncio.coroutine
+def on_member_join(member):
+    yield from client.send_message(member, "**Hey %s!**\n\nWelcome on the official nice super cool *%s* discord server from %s!\n\nIf you want, you can write a little bit about you in the %s channel!\n\nNow have a nice day!" % (member.name, member.server.name, discord.utils.get(member.server.channels, id="332163979365580801").mention, member.server.owner.mention))
+    role = cmd_autorole.get(member.server)
+    if not role == None:
+        yield from client.add_roles(member, role)
+        try:
+            yield from client.send_message(member, "\n\nYou got automatically assigned the role **" + role.name + "**!")
+        except Exception:
+            yield from client.send_message(member, "Sorry, but the bot has no permissions to automatically assing you the role **" + role.name + "**.")
+            raise Exception
 
 
 
