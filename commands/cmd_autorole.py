@@ -4,8 +4,8 @@ from os import path
 import discord
 
 
-def error(content, channel, client):
-    yield from client.send_message(channel, embed=discord.Embed(color=discord.Color.red(), description=content))
+async def error(content, channel, client):
+    await client.send_message(channel, embed=discord.Embed(color=discord.Color.red(), description=content))
 
 
 def get(server):
@@ -25,19 +25,19 @@ def saveFile(id, server):
         f.close()
 
 
-def ex(args, message, client, invoke):
+async def ex(args, message, client, invoke):
 
     print(args)
 
     if len(args) > 0:
         rolename = args.__str__()[1:-1].replace(",", "").replace("'", "")
         role = discord.utils.get(message.server.roles, name=rolename)
-        if role == None:
-            yield from error("Please enter a valid role existing on this server!", message.channel, client)
+        if role is None:
+            await error("Please enter a valid role existing on this server!", message.channel, client)
         else:
             try:
                 saveFile(role.id, message.server)
-                yield from client.send_message(message.channel, embed=discord.Embed(color=discord.Color.green(), description=("Successfully set autorole to role `%s`" % role.name)))
+                await client.send_message(message.channel, embed=discord.Embed(color=discord.Color.green(), description=("Successfully set autorole to role `%s`" % role.name)))
             except Exception:
-                yield from error("Something went wrong while saving autorole!", message.channel, client)
+                await error("Something went wrong while saving autorole!", message.channel, client)
                 raise Exception
