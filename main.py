@@ -3,17 +3,18 @@ from discord import Game, Embed
 
 import SECRETS
 import STATICS
-from commands import cmd_ping, cmd_autorole, cmd_clear
+from commands import cmd_ping, cmd_autorole, cmd_clear, cmd_test
+# PERMS IMPORIEREN
+import perms
 
 client = discord.Client()
 
 
 commands = {
-
     "ping": cmd_ping,
     "autorole": cmd_autorole,
     "clear": cmd_clear,
-
+    "test": cmd_test,
 }
 
 
@@ -30,7 +31,19 @@ async def on_message(message):
         invoke = message.content[len(STATICS.PREFIX):].split(" ")[0]
         args = message.content.split(" ")[1:]
         if commands.__contains__(invoke):
-            await commands.get(invoke).ex(args, message, client, invoke)
+
+            cmd = commands[invoke]
+            try:
+                if not perms.check(message.author, cmd.perm):
+                    await client.send_message(message.channel, embed=Embed(color=discord.Color.red(), description="You don't have the permission to use this command!"))
+                    return
+                await cmd.ex(args, message, client, invoke)
+            except Exception:
+                await cmd.ex(args, message, client, invoke)
+                pass
+                # raise
+            # await commands.get(invoke).ex(args, message, client, invoke)
+            
         else:
             await client.send_message(message.channel, embed=Embed(color=discord.Color.red(), description=("The command `%s` is not valid!" % invoke)))
 
